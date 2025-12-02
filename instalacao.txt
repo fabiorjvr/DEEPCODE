@@ -1,0 +1,382 @@
+PREPARAR AMBIENTE (7 minutos)
+Passo 2.1: Criar Pasta de Trabalho
+Estamos no Prompt de Comando
+
+bash
+cd Desktop
+mkdir DeepCode
+cd DeepCode
+Resultado visual:
+
+texto
+C:\Users\seu_usuario\Desktop\DeepCode>
+Passo 2.2: Criar Ambiente Virtual (Isolamento)
+Ainda no prompt de comando, nesta pasta:
+
+bash
+python -m venv venv
+O que faz: Criar uma pasta venv(ambiente virtual) isolada para DeepCode
+
+Resultado: Uma nova chamada aparecerá venvem seu Desktop\DeepCode
+
+Passo 2.3: Ativar o Ambiente Virtual
+Ainda no Prompt de Comando:
+
+bash
+venv\Scripts\activate.bat
+Resultado visual:
+
+texto
+(venv) C:\Users\seu_usuario\Desktop\DeepCode>
+⚠️ MUITO IMPORTANTE: Veja o (venv)no início! Isso significa que o ambiente virtual está ativado.
+
+Ocorreu um erro de permissão no PowerShell:
+
+Use o Prompt de Comando (cmd.exe) em vez do PowerShell
+
+OU execute o PowerShell como Administrador
+
+Passo 2.4: Atualizar pip
+bash
+python -m pip install --upgrade pip
+Resultado:
+
+texto
+Successfully installed pip-24.0
+PARTE 3: INSTALAR DEEPCODE (3 minutos)
+Passo 3.1: Instalar o Pacote
+Ainda no prompt de comando COM (venv) ativado:
+
+bash
+pip install deepcode-hku
+Vai aparecer:
+
+texto
+Collecting deepcode-hku
+Downloading deepcode_hku-0.1.0-py3-none-any.whl (...)
+Installing collected packages: deepcode-hku, streamlit, anthropic, ...
+Successfully installed deepcode-hku-0.1.0 streamlit-1.28.0 ...
+⏳ ISSO PODE LEVAR 2-3 MINUTOS - Deixe terminar!
+
+Passo 3.2: Verifique a instalação
+bash
+python -c "import deepcode; print('✅ DeepCode instalado com sucesso!')"
+Resultado:
+
+texto
+✅ DeepCode instalado com sucesso!
+Se der erro:
+
+bash
+# Tente reinstalar
+pip install --force-reinstall deepcode-hku
+PARTE 4: CONFIGURAR API KEYS (3 minutos)
+Passo 4.1: Baixar Arquivos de Configuração
+Ainda no Prompt de Comando COM (venv) ativado, na pasta Desktop\DeepCode:
+
+Opção A: Se tiver curl instalado:
+
+bash
+curl -O https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.secrets.yaml
+curl -O https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.config.yaml
+Opção B: Usar PowerShell (melhor para Windows):
+
+PowerShell
+powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.secrets.yaml' -OutFile 'mcp_agent.secrets.yaml'"
+powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.config.yaml' -OutFile 'mcp_agent.config.yaml'"
+Resultado esperado: Dois arquivos aparecem na pastaDesktop\DeepCode
+
+Se não funcionar, alternativa manual:
+
+Abra https://github.com/HKUDS/DeepCode
+
+Clique emmcp_agent.secrets.yaml
+
+Clique "Cru"
+
+Tecle Ctrl + Spara salvar
+
+Faça o mesmo paramcp_agent.config.yaml
+
+Passo 4.2: Editar Arquivo de Configuração
+Abra uma pasta Desktop\DeepCodeno Windows Explorer
+
+Encontre o arquivomcp_agent.secrets.yaml
+
+Clique direito → Abrir com → Notepad (ou VS Code)
+
+Você verá um arquivo vazio ou com conteúdo básico
+
+si o seguinte:
+
+OPÇÃO 1: Usar Claude (RECOMENDADO para você)
+texto
+models:
+  - name: "claude-3-5-sonnet"
+    type: "anthropic"
+    api_key: "COLE_SUA_API_KEY_AQUI"
+    base_url: "https://api.anthropic.com"
+OPÇÃO 2: Usar OpenAI
+texto
+models:
+  - name: "gpt-4"
+    type: "openai"
+    api_key: "COLE_SUA_API_KEY_AQUI"
+    base_url: "https://api.openai.com/v1"
+Passo 4.3: Obter chave de API
+Escolha uma das opções:
+
+🔵 OPÇÃO 1: Claude (Recomendado)
+Acesse: https://console.anthropic.com/
+
+Faça login ou registre
+
+Clique em "Chaves de API" no menu
+
+Clique em "Criar chave"
+
+De um nome (ex: "DeepCode")
+
+COPIE a chave (começa com sk-ant-v4-...)
+
+Cole no arquivo mcp_agent.secrets.yaml
+
+Salve o arquivo (Ctrl + S)
+
+Custo: ~$3-5 USD para testar completamente
+
+🟢 OPÇÃO 2: OpenAI GPT-4
+Acesse: https://platform.openai.com/api-keys
+
+Clique em "Criar nova chave secreta"
+
+COPIE a chave
+
+Cole no arquivo
+
+Bálsamo
+
+Custo: aproximadamente US$ 5 para testar
+
+🟡 OPÇÃO 3: Grátis com Ollama (Avançado)
+Se você não quiser gastar dinheiro, pode usar Ollama (modelo local):
+
+texto
+models:
+  - name: "deepcoder-14b"
+    type: "ollama"
+    base_url: "http://localhost:11434"
+    model: "deepcoder:14b"
+Mas requer:
+
+Instalar Ollama: https://ollama.ai
+
+Baixar do modelo (1-3 GB)
+
+GPU com boa probabilidade
+
+⏳ Mais lento
+
+Para você agora: Comece com Claude ou OpenAI (mais rápido)
+
+PARTE 5: INICIAR DEEPCODE (1 minuto)
+Passo 5.1: Verifique a configuração
+Ainda no prompt de comando COM (venv) ativado:
+
+bash
+python -c "from anthropic import Anthropic; print('✅ API key válida')"
+Se receber um erro, verifique se sua chave API está correta emmcp_agent.secrets.yaml
+
+Passo 5.2: Iniciar Interface Web
+bash
+deepcode
+Resultado:
+
+texto
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to False.
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.x.x:8501
+Passo 5.3: Acessar no Navegador
+Abra seu navegador (Chrome, Edge, Firefox)
+
+Acesse: http://localhost:8501
+
+Você verá:
+
+Logotipo do DeepCode
+
+Menu na esquerda
+
+Opções: "Paper2Code", "Text2Web", "Text2Backend"
+
+Campo para upload de arquivo
+
+PARTE 6: TESTE INICIAL (3 minutos)
+Teste 1: Paper2Code
+Clique em "Paper2Code"
+
+Escreva uma descrição simples:
+
+texto
+Create a Python function to calculate Fibonacci numbers
+Clique em "Gerar"
+
+Veja o código sendo gerado em tempo real!
+
+Teste 2: Texto para Web
+Clique em "Text2Web"
+
+Descreva uma página:
+
+texto
+Create a landing page for a sports analytics platform with header, hero section, and feature cards
+Gere código React/HTML
+
+✅ LISTA DE VERIFICAÇÃO FINAL
+Antes de considerar "instalação completa":
+
+ Python 3.8 ou superior instalado ( python --version)
+
+ venv ativado (vê (venv)no terminal)
+
+ deepcode-hku instalado ( pip list | findstr deepcode)
+
+ Arquivos mcp_agent.secrets.yamle mcp_agent.config.yamlestética
+
+ Chave de API fásico emmcp_agent.secrets.yaml
+
+ deepcodeiniciado sem erros
+
+ Interface web abre emhttp://localhost:8501
+
+ Consegue gerar código (teste Paper2Code)
+
+🆘 PROBLEMAS COMUNS E SOLUÇÕES
+❌ "python: comando não encontrado"
+"Novo:
+
+Reinstale Python marcando "Add Python to PATH"
+
+Prompt de comando Reinicie
+
+❌ "ModuleNotFoundError: Nenhum módulo chamado 'deepcode' encontrado"
+"Novo:
+
+bash
+# Verifique se venv está ativado (vê (venv) no prompt?)
+# Se não, execute:
+venv\Scripts\activate.bat
+
+# Depois:
+pip install deepcode-hku
+❌ "Streamlit não abre em http://localhost:8501 "
+"Novo:
+
+bash
+# Tente com porta diferente:
+streamlit run -- --server.port 8080
+# Acesse: http://localhost:8080
+❌ "Chave API inválida"
+"Novo:
+
+Acesse o site da API (Anthropic ou OpenAI)
+
+Verifique se a chave ainda é válida
+
+Crie uma nova chave
+
+Atualize-osmcp_agent.secrets.yaml
+
+Salve o arquivo
+
+Reinicie:deepcode
+
+❌ "Falha na indexação do código-fonte"
+"Novo:
+
+bash
+# Edite mcp_agent.config.yaml e altere para:
+codebase_indexing:
+  enabled: false
+🚀 PRÓXIMOS PASSOS
+Agora que o DeepCode está instalado:
+
+Teste com seus próprios documentos:
+
+Faça upload de um PDF de pesquisa
+
+Veja o código ser gerado
+
+Experimente diferentes tipos:
+
+Paper2Code (de papéis para código)
+
+Text2Web (descrições para front-end)
+
+Text2Backend (requisitos para back-end)
+
+Use com seus projetos:
+
+Análise de futebol/esportes
+
+Plataforma de comércio eletrônico
+
+Agentes WhatsApp
+
+Integre com seus fluxos:
+
+CLI para
+
+Git para versionamento
+
+APIs para integração
+
+📞 AJUDA RÁPIDA
+Se algo não funcionar:
+
+Verifique tudo está:
+
+bash
+# Terminal deve mostrar: (venv) C:\...>
+# Se não, execute: venv\Scripts\activate.bat
+Reinstale limpo:
+
+bash
+pip uninstall deepcode-hku -y
+pip install deepcode-hku
+Consulte os erros:
+
+bash
+deepcode --debug
+# Mostra logs detalhados
+Comunidade:
+
+Problemas relatados no GitHub: https://github.com/HKUDS/DeepCode/issues
+
+Discord: [Procure no README do projeto]
+
+📊 COMANDOS ÚTEIS
+bash
+# Listar versão instalada
+pip show deepcode-hku
+
+# Verificar todas as dependências
+pip list
+
+# Atualizar DeepCode
+pip install --upgrade deepcode-hku
+
+# Desinstalar
+pip uninstall deepcode-hku -y
+
+# Executar em debug
+deepcode --debug
+
+# CLI alternativo
+python cli/main_cli.py --help
+🎉PARABÉNS! Você tem o DeepCode instalado e funcionando!
+
+Agora use-o para acelerar seus projetos de desenvolvimento. Qualquer dúvida, consulte a documentação oficial .

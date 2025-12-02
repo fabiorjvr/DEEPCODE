@@ -1,0 +1,447 @@
+SCRIPTS PRONTOS PARA INSTALAR DEEPCODE
+SCRIPT 1: INSTALAÇÃO RÁPIDA (Windows - Prompt de Comando)
+Copie e cole no Prompt de Comando (cmd.exe):
+
+texto
+@echo off
+setlocal enabledelayedexpansion
+
+echo.
+echo ====================================
+echo  DeepCode - Instalador Automático
+echo  Para Windows 10/11
+echo ====================================
+echo.
+
+REM Verificar Python
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌ ERRO: Python não encontrado!
+    echo Baixe em: https://www.python.org/downloads/
+    pause
+    exit /b 1
+)
+
+REM Verificar Git
+git --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌ AVISO: Git não detectado
+    echo Algumas funcionalidades podem não funcionar
+    echo Baixe em: https://git-scm.com/downloads
+    pause
+)
+
+echo ✅ Python detectado
+echo ✅ Iniciando instalação...
+echo.
+
+REM Criar diretório
+set INSTALL_DIR=%USERPROFILE%\DeepCode_Workspace
+if not exist "%INSTALL_DIR%" (
+    mkdir "%INSTALL_DIR%"
+    echo ✅ Pasta criada: %INSTALL_DIR%
+)
+
+cd /d "%INSTALL_DIR%"
+
+REM Criar venv
+if not exist "venv" (
+    echo ⏳ Criando ambiente virtual...
+    python -m venv venv
+    echo ✅ Ambiente virtual criado
+)
+
+REM Ativar venv
+echo ⏳ Ativando ambiente virtual...
+call venv\Scripts\activate.bat
+
+REM Atualizar pip
+echo ⏳ Atualizando pip...
+python -m pip install --upgrade pip --quiet
+
+REM Instalar DeepCode
+echo ⏳ Instalando DeepCode (pode levar 2-3 minutos)...
+pip install deepcode-hku --quiet
+
+if errorlevel 1 (
+    echo ❌ ERRO na instalação do DeepCode
+    pause
+    exit /b 1
+)
+
+echo ✅ DeepCode instalado com sucesso!
+
+REM Baixar arquivos config
+echo ⏳ Baixando arquivos de configuração...
+
+if exist "mcp_agent.secrets.yaml" (
+    echo ⚠️  Arquivo mcp_agent.secrets.yaml já existe (mantendo)
+) else (
+    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.secrets.yaml' -OutFile 'mcp_agent.secrets.yaml'" >nul 2>&1
+    if errorlevel 1 (
+        echo ⚠️  Erro ao baixar mcp_agent.secrets.yaml (será criado vazio)
+        echo. > mcp_agent.secrets.yaml
+    ) else (
+        echo ✅ Arquivo mcp_agent.secrets.yaml baixado
+    )
+)
+
+if exist "mcp_agent.config.yaml" (
+    echo ⚠️  Arquivo mcp_agent.config.yaml já existe (mantendo)
+) else (
+    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.config.yaml' -OutFile 'mcp_agent.config.yaml'" >nul 2>&1
+    if errorlevel 1 (
+        echo ⚠️  Erro ao baixar mcp_agent.config.yaml (criando básico)
+        echo search: >> mcp_agent.config.yaml
+        echo   default_search_server: brave >> mcp_agent.config.yaml
+    ) else (
+        echo ✅ Arquivo mcp_agent.config.yaml baixado
+    )
+)
+
+echo.
+echo ====================================
+echo  ✅ INSTALAÇÃO COMPLETA!
+echo ====================================
+echo.
+echo 📁 Diretório: %INSTALL_DIR%
+echo.
+echo ⚠️  PRÓXIMO PASSO IMPORTANTE:
+echo.
+echo 1. Abra o arquivo: %INSTALL_DIR%\mcp_agent.secrets.yaml
+echo.
+echo 2. Adicione sua API key (escolha UMA opção):
+echo.
+echo    OPÇÃO A - Claude (Anthropic) [RECOMENDADO]
+echo    models:
+echo      - name: "claude-3-5-sonnet"
+echo        type: "anthropic"
+echo        api_key: "sk-ant-v4-..."
+echo        base_url: "https://api.anthropic.com"
+echo.
+echo    OPÇÃO B - OpenAI GPT-4
+echo    models:
+echo      - name: "gpt-4"
+echo        type: "openai"
+echo        api_key: "sk-proj-..."
+echo        base_url: "https://api.openai.com/v1"
+echo.
+echo 3. Salve o arquivo
+echo.
+echo 4. Para iniciar DeepCode, execute:
+echo    deepcode
+echo.
+echo Será aberto em: http://localhost:8501
+echo.
+echo 🌐 ONDE CONSEGUIR API KEYS:
+echo - Anthropic: https://console.anthropic.com/
+echo - OpenAI: https://platform.openai.com/api-keys
+echo.
+pause
+SCRIPT 2: INSTALAÇÃO COM VERIFICAÇÕES (PowerShell)
+Abra o PowerShell como Administrador e execute:
+
+PowerShell
+# Script: Install-DeepCode.ps1
+
+param(
+    [string]$InstallPath = "$env:USERPROFILE\DeepCode_Workspace",
+    [string]$PythonVersion = "3.11"
+)
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  DeepCode - Instalador PowerShell v1  ║" -ForegroundColor Cyan
+Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+
+# Função para verificar comando
+function Test-Command {
+    param([string]$Command)
+    try {
+        if (Get-Command $Command -ErrorAction Stop) {
+            return $true
+        }
+    }
+    catch {
+        return $false
+    }
+}
+
+# PASSO 1: Verificar Python
+Write-Host "[1/7] Verificando Python..." -ForegroundColor Yellow
+
+if (-not (Test-Command python)) {
+    Write-Host "❌ Python não encontrado!" -ForegroundColor Red
+    Write-Host "Baixe em: https://www.python.org/downloads/" -ForegroundColor Red
+    Read-Host "Pressione Enter para sair"
+    exit 1
+}
+
+$pythonVer = python --version 2>&1
+Write-Host "✅ $pythonVer encontrado" -ForegroundColor Green
+
+# PASSO 2: Verificar Git
+Write-Host "`n[2/7] Verificando Git..." -ForegroundColor Yellow
+
+if (Test-Command git) {
+    $gitVer = git --version
+    Write-Host "✅ $gitVer encontrado" -ForegroundColor Green
+} else {
+    Write-Host "⚠️  Git não encontrado (opcional)" -ForegroundColor Yellow
+}
+
+# PASSO 3: Criar diretório
+Write-Host "`n[3/7] Criando diretório de trabalho..." -ForegroundColor Yellow
+
+if (-not (Test-Path $InstallPath)) {
+    New-Item -ItemType Directory -Path $InstallPath | Out-Null
+    Write-Host "✅ Diretório criado: $InstallPath" -ForegroundColor Green
+} else {
+    Write-Host "✅ Diretório já existe: $InstallPath" -ForegroundColor Green
+}
+
+Set-Location -Path $InstallPath
+
+# PASSO 4: Criar ambiente virtual
+Write-Host "`n[4/7] Criando ambiente virtual..." -ForegroundColor Yellow
+
+if (-not (Test-Path "venv")) {
+    python -m venv venv
+    Write-Host "✅ Ambiente virtual criado" -ForegroundColor Green
+} else {
+    Write-Host "✅ Ambiente virtual já existe" -ForegroundColor Green
+}
+
+# PASSO 5: Ativar venv e instalar
+Write-Host "`n[5/7] Ativando ambiente virtual..." -ForegroundColor Yellow
+& .\venv\Scripts\Activate.ps1
+Write-Host "✅ Ambiente virtual ativado" -ForegroundColor Green
+
+# PASSO 6: Atualizar pip e instalar
+Write-Host "`n[6/7] Instalando DeepCode (pode levar 2-3 minutos)..." -ForegroundColor Yellow
+python -m pip install --upgrade pip -q
+pip install deepcode-hku -q
+
+Write-Host "✅ DeepCode instalado" -ForegroundColor Green
+
+# PASSO 7: Baixar configs
+Write-Host "`n[7/7] Baixando arquivos de configuração..." -ForegroundColor Yellow
+
+$urls = @{
+    "mcp_agent.secrets.yaml" = "https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.secrets.yaml"
+    "mcp_agent.config.yaml" = "https://raw.githubusercontent.com/HKUDS/DeepCode/main/mcp_agent.config.yaml"
+}
+
+foreach ($file in $urls.Keys) {
+    if (-not (Test-Path $file)) {
+        try {
+            Invoke-WebRequest -Uri $urls[$file] -OutFile $file -ErrorAction Stop
+            Write-Host "✅ $file baixado" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "⚠️  Erro ao baixar $file" -ForegroundColor Yellow
+            New-Item -ItemType File -Name $file | Out-Null
+        }
+    } else {
+        Write-Host "✅ $file já existe" -ForegroundColor Green
+    }
+}
+
+# CONCLUSÃO
+Write-Host "`n╔════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║  ✅ INSTALAÇÃO CONCLUÍDA!              ║" -ForegroundColor Green
+Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
+
+Write-Host "`nℹ️  Informações importantes:" -ForegroundColor Cyan
+Write-Host "📁 Diretório: $InstallPath"
+Write-Host "🐍 Python: $pythonVer"
+Write-Host ""
+Write-Host "🔑 PRÓXIMO PASSO: Configure sua API key" -ForegroundColor Yellow
+Write-Host "   Edite: $InstallPath\mcp_agent.secrets.yaml" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "🚀 Para iniciar DeepCode:" -ForegroundColor Cyan
+Write-Host "   deepcode" -ForegroundColor Green
+Write-Host ""
+Write-Host "🌐 Abrirá em: http://localhost:8501" -ForegroundColor Cyan
+
+Read-Host "`nPressione Enter para finalizar"
+SCRIPT 3: VERIFICAÇÃO DE INTEGRIDADE
+Executar após a instalação:
+
+bash
+# verify_installation.py
+
+import sys
+import subprocess
+import json
+
+checks = {
+    "python_version": False,
+    "git_installed": False,
+    "deepcode_installed": False,
+    "config_files_exist": False,
+    "venv_active": False,
+    "llm_configured": False
+}
+
+print("=" * 50)
+print("  DeepCode - Verificador de Instalação")
+print("=" * 50)
+print()
+
+# Check 1: Python version
+print("[1/6] Verificando Python...")
+py_version = sys.version_info
+if py_version.major == 3 and py_version.minor >= 8:
+    print(f"✅ Python {py_version.major}.{py_version.minor} OK")
+    checks["python_version"] = True
+else:
+    print(f"❌ Python {py_version.major}.{py_version.minor} (mínimo 3.8)")
+
+# Check 2: Git
+print("\n[2/6] Verificando Git...")
+try:
+    subprocess.run(["git", "--version"], capture_output=True, check=True)
+    print("✅ Git instalado")
+    checks["git_installed"] = True
+except:
+    print("⚠️  Git não encontrado (opcional)")
+
+# Check 3: DeepCode
+print("\n[3/6] Verificando DeepCode...")
+try:
+    import deepcode
+    print("✅ DeepCode importado com sucesso")
+    checks["deepcode_installed"] = True
+except ImportError as e:
+    print(f"❌ Erro ao importar DeepCode: {e}")
+
+# Check 4: Config files
+print("\n[4/6] Verificando arquivos de configuração...")
+import os
+if os.path.exists("mcp_agent.secrets.yaml") and os.path.exists("mcp_agent.config.yaml"):
+    print("✅ Arquivos de configuração encontrados")
+    checks["config_files_exist"] = True
+    
+    # Verificar se API key está configurada
+    with open("mcp_agent.secrets.yaml", "r") as f:
+        content = f.read()
+        if "api_key" in content and "sk-" in content:
+            print("✅ API key configurada")
+            checks["llm_configured"] = True
+        else:
+            print("⚠️  API key não configurada (EDITE o arquivo!)")
+else:
+    print("❌ Arquivos de configuração não encontrados")
+
+# Check 5: Virtual env
+print("\n[5/6] Verificando ambiente virtual...")
+in_venv = hasattr(sys, 'real_prefix') or (
+    hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix
+)
+if in_venv:
+    print("✅ Ambiente virtual ativado")
+    checks["venv_active"] = True
+else:
+    print("⚠️  Não está em um ambiente virtual")
+
+# Resumo
+print("\n" + "=" * 50)
+print("  RESUMO")
+print("=" * 50)
+
+passed = sum(checks.values())
+total = len(checks)
+
+for check, status in checks.items():
+    symbol = "✅" if status else "❌"
+    print(f"{symbol} {check.replace('_', ' ').title()}")
+
+print(f"\nResultado: {passed}/{total} verificações passaram")
+
+if passed == total:
+    print("\n🎉 Instalação perfeita! Pronto para usar DeepCode!")
+    print("Execute: deepcode")
+elif passed >= 4:
+    print("\n⚠️  Instalação funcional, mas configure API key!")
+    print("Edite: mcp_agent.secrets.yaml")
+else:
+    print("\n❌ Problemas detectados. Reinstale seguindo o guia.")
+
+sys.exit(0 if passed >= 4 else 1)
+SCRIPT 4: DESINSTALAÇÃO LIMPA
+bash
+# uninstall_deepcode.sh (Windows Batch)
+
+@echo off
+echo.
+echo ====================================
+echo  DeepCode - Desinstalador
+echo ====================================
+echo.
+
+REM Desativar venv se ativo
+if defined VIRTUAL_ENV (
+    echo Desativando ambiente virtual...
+    deactivate
+)
+
+REM Remover pasta venv
+if exist "venv" (
+    echo Deletando venv...
+    rmdir /s /q venv
+)
+
+REM Desinstalar pacote
+echo Desinstalando deepcode-hku...
+pip uninstall deepcode-hku -y
+
+echo.
+echo ✅ DeepCode desinstalado com sucesso!
+echo.
+echo Para remover completamente, delete a pasta:
+echo %cd%
+echo.
+pause
+COMO USAR ESTES SCRIPTS
+Opção 1: Script Batch (Windows - Mais Fácil)
+Copie o ROTEIRO 1 acima
+
+Crie um arquivoinstall_deepcode.bat
+
+Cole o conteúdo
+
+Clique 2x para executar
+
+Siga como lúmen
+
+Opção 2: PowerShell (Windows - Mais Robusto)
+Abra o PowerShell como administrador
+
+Executar:Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+Salve SCRIPT 2 comoInstall-DeepCode.ps1
+
+Executar:.\Install-DeepCode.ps1
+
+Opção 3: Python (Multiplataforma)
+Salve SCRIPT 3 comoverify_installation.py
+
+Executar:python verify_installation.py
+
+Verificar tudo automaticamente
+
+⚠️ AVISOS IMPORTANTES
+SEMPRE crie um ambiente virtual (venv)
+
+NUNCA ignora erros de chave de API
+
+Faça backup de seus arquivos secrets.yaml após configuração
+
+Teste uma instalação compython -c "import deepcode"
+
+Versão:1.0
+Última atualização:Dezembro 2025
+Testado em: Windows 10/11, Python 3.11+

@@ -1,0 +1,14 @@
+venv/
+*.pyc
+__pycache__/
+.pytest_cache/
+.streamlit/
+.vscode/
+.idea/
+*.log
+build/
+dist/
+node_modules/
+*.env
+*.bat
+deepcode_lab/

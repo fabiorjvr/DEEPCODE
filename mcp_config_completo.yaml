@@ -1,0 +1,57 @@
+# Arquivo de configuração principal do DeepCode
+# Define quais modelos estão disponíveis e qual usar.
+
+models:
+  # Opção 1: Claude 3.5 Sonnet (Recomendado pela DeepCode)
+  - name: "claude-3-5-sonnet"
+    type: "anthropic"
+    # O DeepCode buscará a chave no mcp_agent.secrets.yaml se configurado corretamente
+    # Mas deixamos aqui também para garantir
+    api_key: "SUA_CHAVE_ANTHROPIC_AQUI"
+    base_url: "https://api.anthropic.com"
+
+  # Opção 2: GPT-4o (OpenAI)
+  - name: "gpt-4o"
+    type: "openai"
+    api_key: "SUA_CHAVE_OPENAI_AQUI"
+    base_url: "https://api.openai.com/v1"
+
+  # Opção 3: Gemini 1.5 Pro (Google)
+  - name: "gemini-1.5-pro"
+    type: "google" # Utiliza integração nativa via google-genai
+    api_key: "YOUR_GOOGLE_API_KEY"
+
+  # Opção 4: Groq (Llama 3 70B - Muito Rápido)
+  # Usamos a compatibilidade com OpenAI do Groq
+  - name: "llama3-70b-8192"
+    type: "openai" 
+    base_url: "https://api.groq.com/openai/v1"
+    api_key: "YOUR_GROQ_API_KEY"
+
+# Modelo padrão a ser usado (altere o nome aqui para trocar de modelo)
+current_model: "gemini-1.5-pro"
+
+# Configurações de indexação de código
+codebase_indexing:
+  enabled: true
+  # Se tiver problemas com indexação, mude para false
+
+# Configuração dos servidores MCP (Model Context Protocol)
+mcp:
+  servers:
+    brave:
+      command: "node"
+      args: ["C:/Users/FABIO/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-brave-search/dist/index.js"]
+      env:
+        BRAVE_API_KEY: "sua-chave-brave-aqui"
+    
+    filesystem:
+      command: "node"
+      args: ["C:/Users/FABIO/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js", "."]
+    
+    # fetch server não está mais disponível no npm, vamos usar alternativa
+    fetch:
+      command: "node"
+      args: ["C:/Users/FABIO/AppData/Roaming/npm/node_modules/@modelcontextprotocol/server-fetch/dist/index.js"]
+      # Este servidor pode não existir, vamos desabilitar por enquanto
+      enabled: false

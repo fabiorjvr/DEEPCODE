@@ -1,0 +1,36 @@
+=========================================================
+GUIA DE INÍCIO RÁPIDO - DEEPCODE
+=========================================================
+
+PARABÉNS! O DeepCode foi instalado e configurado com perfeição.
+
+1. ONDE ESTÁ INSTALADO?
+   Pasta: C:\Users\FABIO\DeepCode_Workspace
+   (Seus arquivos de configuração e ambiente virtual estão aqui)
+
+2. COMO INICIAR (Passo a Passo)
+   Abra o Prompt de Comando (cmd) ou PowerShell e digite:
+
+   cd %USERPROFILE%\DeepCode_Workspace
+   venv\Scripts\activate
+   deepcode
+
+   (Isso abrirá a interface do DeepCode)
+
+3. MODELOS DE INTELIGÊNCIA ARTIFICIAL (JÁ CONFIGURADOS)
+   Nós configuramos suas chaves de API com sucesso!
+
+   - Gemini 1.5 Pro (Google) -> DEFINIDO COMO PADRÃO
+     (Ótimo equilíbrio entre inteligência e velocidade)
+
+   - Groq (Llama 3 70B)
+     (Extremamente rápido)
+
+   Para trocar de modelo, edite o arquivo:
+   C:\Users\FABIO\DeepCode_Workspace\mcp_agent.config.yaml
+   Mude a linha "current_model" para o nome do modelo desejado.
+
+4. PROBLEMAS?
+   Se precisar reinstalar, basta apagar a pasta DeepCode_Workspace e rodar o script "install_deepcode.bat" novamente.
+
+Divirta-se codando com DeepCode!
